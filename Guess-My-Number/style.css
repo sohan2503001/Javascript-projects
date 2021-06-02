@@ -117,3 +117,10 @@ h1 {
 .label-score {
   margin-bottom: 2rem;
 }
+
+@media (max-width:650px){
+  .again{
+    top:1rem;
+    left: 1rem;
+  }
+}
