@@ -1,11 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=Mate+SC&display=swap');
 
-body{
-    background-color: #6B7280;
-    font-family: 'Mate SC', serif;
+body {
+    -webkit-box-align: center;
+    -ms-flex-align: center;
+    align-items: center;
+    background-color: #010a00;
+    background-image: url("https://www.transparenttextures.com/patterns/3px-tile.png");
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    font-size: 1rem;
 }
 
-.outer{
+/*Header Styling*/
+.neon {
+    color: #fff;
+    text-shadow:
+        0 0 5px #fff,
+        0 0 10px #fff,
+        0 0 20px #fff,
+        0 0 40px rgb(0, 0, 0),
+        0 0 80px rgb(0, 0, 0),
+        0 0 90px rgb(247, 4, 4),
+        0 0 100px #0ff,
+        0 0 150px #0ff;
+}
+
+h1 {
+    font-weight: 400;
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 60px;
+}
+
+/*Outer Box styling*/
+.outer {
     display: flex;
     flex-direction: column;
     border: 1px solid black;
@@ -17,15 +46,16 @@ body{
     border-radius: 5px;
 }
 
-.upper{
+.upper {
     display: flex;
     flex-direction: row;
     border: 1px solid black;
-    height: 150px;    
+    height: 150px;
     margin: 10px;
 }
 
-.btn{
+/*Button Styling*/
+.btn {
     display: block;
     height: 40px;
     border-radius: 5px;
@@ -34,23 +64,31 @@ body{
     border: none;
     font-family: 'Mate SC', serif;
     font-size: large;
-    font-weight: 500;
+    font-weight: 800;
 }
 
-.btn:hover{
-    background-color: white;
+.btn:hover {
+    background-color: black;
+    color: white;
 }
 
-.enter{
+.enter {
     background-color: rgb(81, 81, 247);
 }
 
-.reset{
+.reset {
     background-color: rgb(252, 56, 56);
 }
 
-.lower{
+.lower {
     border: 1px solid black;
     margin: 10px;
-    height: 130px;
+    height: 170px;
+}
+
+/*output Age*/
+.ageo {
+    text-align: center;
+    font-size: 20px;
+    color: rgb(8, 68, 87);
 }
