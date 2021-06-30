@@ -17,9 +17,9 @@ const account1 = {
     '2020-01-28T09:15:04.904Z',
     '2020-04-01T10:17:24.185Z',
     '2020-05-08T14:11:59.604Z',
-    '2020-05-27T17:01:17.194Z',
-    '2020-07-11T23:36:17.929Z',
-    '2020-07-12T10:51:36.790Z',
+    '2020-07-26T17:01:17.194Z',
+    '2020-07-28T23:36:17.929Z',
+    '2020-08-01T10:51:36.790Z',
   ],
   currency: 'EUR',
   locale: 'pt-PT', // de-DE
@@ -47,6 +47,7 @@ const account2 = {
 
 const accounts = [account1, account2];
 
+/////////////////////////////////////////////////
 // Elements
 const labelWelcome = document.querySelector('.welcome');
 const labelDate = document.querySelector('.date');
@@ -73,6 +74,9 @@ const inputLoanAmount = document.querySelector('.form__input--loan-amount');
 const inputCloseUsername = document.querySelector('.form__input--user');
 const inputClosePin = document.querySelector('.form__input--pin');
 
+/////////////////////////////////////////////////
+// Functions
+
 const formatMovementDate = function (date, locale) {
   const calcDaysPassed = (date1, date2) =>
     Math.round(Math.abs(date2 - date1) / (1000 * 60 * 60 * 24));
@@ -98,7 +102,6 @@ const formatCur = function (value, locale, currency) {
   }).format(value);
 };
 
-////Movements display function
 const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
@@ -127,13 +130,11 @@ const displayMovements = function (acc, sort = false) {
   });
 };
 
-//Display Balance
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
   labelBalance.textContent = formatCur(acc.balance, acc.locale, acc.currency);
 };
 
-//Display Summary
 const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
@@ -156,7 +157,6 @@ const calcDisplaySummary = function (acc) {
   labelSumInterest.textContent = formatCur(interest, acc.locale, acc.currency);
 };
 
-////Username function
 const createUsernames = function (accs) {
   accs.forEach(function (acc) {
     acc.username = acc.owner
@@ -164,23 +164,58 @@ const createUsernames = function (accs) {
       .split(' ')
       .map(name => name[0])
       .join('');
-  })
-}
+  });
+};
 createUsernames(accounts);
 
 const updateUI = function (acc) {
-  //Display Movements
-  displayMovements(acc.movements)
+  // Display movements
+  displayMovements(acc);
 
-  //Display balance
-  calcDisplayBalance(acc)
+  // Display balance
+  calcDisplayBalance(acc);
 
-  //Display summary
+  // Display summary
   calcDisplaySummary(acc);
-}
+};
 
-//Event Handler
-let currentAccount;
+const startLogOutTimer = function () {
+  const tick = function () {
+    const min = String(Math.trunc(time / 60)).padStart(2, 0);
+    const sec = String(time % 60).padStart(2, 0);
+
+    // In each call, print the remaining time to UI
+    labelTimer.textContent = `${min}:${sec}`;
+
+    // When 0 seconds, stop timer and log out user
+    if (time === 0) {
+      clearInterval(timer);
+      labelWelcome.textContent = 'Log in to get started';
+      containerApp.style.opacity = 0;
+    }
+
+    // Decrease 1s
+    time--;
+  };
+
+  // Set time to 5 minutes
+  let time = 12;
+
+  // Call the timer every second
+  tick();
+  const timer = setInterval(tick, 1000);
+
+  return timer;
+};
+
+///////////////////////////////////////
+// Event handlers
+let currentAccount, timer;
+
+// FAKE ALWAYS LOGGED IN
+// currentAccount = account1;
+// updateUI(currentAccount);
+// containerApp.style.opacity = 100;
 
 btnLogin.addEventListener('click', function (e) {
   // Prevent form from submitting
@@ -215,13 +250,6 @@ btnLogin.addEventListener('click', function (e) {
       options
     ).format(now);
 
-    // const day = `${now.getDate()}`.padStart(2, 0);
-    // const month = `${now.getMonth() + 1}`.padStart(2, 0);
-    // const year = now.getFullYear();
-    // const hour = `${now.getHours()}`.padStart(2, 0);
-    // const min = `${now.getMinutes()}`.padStart(2, 0);
-    // labelDate.textContent = `${day}/${month}/${year}, ${hour}:${min}`;
-
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
@@ -237,7 +265,7 @@ btnLogin.addEventListener('click', function (e) {
 
 btnTransfer.addEventListener('click', function (e) {
   e.preventDefault();
-  const amount = +(inputTransferAmount.value);
+  const amount = +inputTransferAmount.value;
   const receiverAcc = accounts.find(
     acc => acc.username === inputTransferTo.value
   );
@@ -249,14 +277,22 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount.balance >= amount &&
     receiverAcc?.username !== currentAccount.username
   ) {
-    //Doing transfer
+    // Doing the transfer
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
 
-    //update UI
+    // Add transfer date
+    currentAccount.movementsDates.push(new Date().toISOString());
+    receiverAcc.movementsDates.push(new Date().toISOString());
+
+    // Update UI
     updateUI(currentAccount);
+
+    // Reset timer
+    clearInterval(timer);
+    timer = startLogOutTimer();
   }
-})
+});
 
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
@@ -284,28 +320,37 @@ btnLoan.addEventListener('click', function (e) {
 
 btnClose.addEventListener('click', function (e) {
   e.preventDefault();
+
   if (
     inputCloseUsername.value === currentAccount.username &&
-    +(inputClosePin.value) === currentAccount.pin
+    +inputClosePin.value === currentAccount.pin
   ) {
-    const index = accounts.findIndex(acc => acc.username === currentAccount.username);
+    const index = accounts.findIndex(
+      acc => acc.username === currentAccount.username
+    );
     console.log(index);
+    // .indexOf(23)
 
-    //delete account
+    // Delete account
     accounts.splice(index, 1);
 
-    //Update UI
+    // Hide UI
     containerApp.style.opacity = 0;
-  };
+  }
+
   inputCloseUsername.value = inputClosePin.value = '';
-})
+});
 
 let sorted = false;
 btnSort.addEventListener('click', function (e) {
   e.preventDefault();
-  displayMovements(currentAccount.movements, !sorted);
+  // BUG in video:
+  // displayMovements(currentAccount.movements, !sorted);
+
+  // FIX:
+  displayMovements(currentAccount, !sorted);
   sorted = !sorted;
-})
+});
 
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
