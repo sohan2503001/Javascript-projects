@@ -183,25 +183,57 @@ const updateUI = function (acc) {
 let currentAccount;
 
 btnLogin.addEventListener('click', function (e) {
+  // Prevent form from submitting
   e.preventDefault();
 
-  currentAccount = accounts.find(acc => acc.username === inputLoginUsername.value);
+  currentAccount = accounts.find(
+    acc => acc.username === inputLoginUsername.value
+  );
   console.log(currentAccount);
 
-  if (currentAccount?.pin === +(inputLoginPin.value)) {
-    //Display UI
-    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]}`;
-  };
-  containerApp.style.opacity = 100;
+  if (currentAccount?.pin === +inputLoginPin.value) {
+    // Display UI and message
+    labelWelcome.textContent = `Welcome back, ${currentAccount.owner.split(' ')[0]
+      }`;
+    containerApp.style.opacity = 100;
 
-  //Clear input fields
-  inputLoginUsername.value = inputLoginPin.value = '';
-  inputLoginPin.blur();
+    // Create current date and time
+    const now = new Date();
+    const options = {
+      hour: 'numeric',
+      minute: 'numeric',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+      // weekday: 'long',
+    };
+    // const locale = navigator.language;
+    // console.log(locale);
 
-  //updateUI
-  updateUI(currentAccount);
+    labelDate.textContent = new Intl.DateTimeFormat(
+      currentAccount.locale,
+      options
+    ).format(now);
 
-})
+    // const day = `${now.getDate()}`.padStart(2, 0);
+    // const month = `${now.getMonth() + 1}`.padStart(2, 0);
+    // const year = now.getFullYear();
+    // const hour = `${now.getHours()}`.padStart(2, 0);
+    // const min = `${now.getMinutes()}`.padStart(2, 0);
+    // labelDate.textContent = `${day}/${month}/${year}, ${hour}:${min}`;
+
+    // Clear input fields
+    inputLoginUsername.value = inputLoginPin.value = '';
+    inputLoginPin.blur();
+
+    // Timer
+    if (timer) clearInterval(timer);
+    timer = startLogOutTimer();
+
+    // Update UI
+    updateUI(currentAccount);
+  }
+});
 
 btnTransfer.addEventListener('click', function (e) {
   e.preventDefault();
@@ -231,15 +263,24 @@ btnLoan.addEventListener('click', function (e) {
 
   const amount = Math.floor(inputLoanAmount.value);
 
-  if (amount > 0 && currentAccount.movements.some(mov =>
-    mov >= amount * 0.1)) {
-    currentAccount.movements.push(amount);
+  if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
+    setTimeout(function () {
+      // Add movement
+      currentAccount.movements.push(amount);
 
-    //updateUI
-    updateUI(currentAccount);
+      // Add loan date
+      currentAccount.movementsDates.push(new Date().toISOString());
 
+      // Update UI
+      updateUI(currentAccount);
+
+      // Reset timer
+      clearInterval(timer);
+      timer = startLogOutTimer();
+    }, 2500);
   }
-})
+  inputLoanAmount.value = '';
+});
 
 btnClose.addEventListener('click', function (e) {
   e.preventDefault();
